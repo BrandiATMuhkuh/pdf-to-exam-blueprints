@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
+import { ChatPanel } from "@/components/chat-panel"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -39,13 +40,39 @@ export default function Page() {
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
+        <div className="flex min-h-0 flex-1 gap-4 p-4">
+          <div className="bg-card text-card-foreground flex-1 overflow-auto rounded-xl border p-4">
+            <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+              <div className="bg-muted/50 aspect-video rounded-xl" />
+              <div className="bg-muted/50 aspect-video rounded-xl" />
+              <div className="bg-muted/50 aspect-video rounded-xl" />
+            </div>
+
+            <div className="mt-6 overflow-x-auto">
+              <table className="min-w-full table-auto border-collapse">
+                <thead>
+                  <tr className="bg-muted/50">
+                    <th className="border-b px-3 py-2 text-left text-sm font-medium">Name</th>
+                    <th className="border-b px-3 py-2 text-left text-sm font-medium">Description</th>
+                    <th className="border-b px-3 py-2 text-left text-sm font-medium">Created</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <tr key={i} className="even:bg-muted/20">
+                      <td className="border-b px-3 py-2 text-sm">Blueprint {i + 1}</td>
+                      <td className="border-b px-3 py-2 text-sm">Dummy description for preview</td>
+                      <td className="border-b px-3 py-2 text-sm">2025-09-01</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+
+          <div className="hidden md:flex w-[28rem] min-h-0">
+            <ChatPanel className="h-full w-full" />
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
