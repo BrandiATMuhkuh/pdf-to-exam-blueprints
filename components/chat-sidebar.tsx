@@ -23,7 +23,7 @@ export function ChatSidebar({
     >
       <SidebarContent className="p-2">
         <div className="h-full w-full">
-          <ChatPanel className="h-full w-full" />
+          <ChatPanel />
         </div>
       </SidebarContent>
       <SidebarRail />

@@ -11,6 +11,8 @@
     "gen:migration": "npx supabase db pull --local"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2.0.23",
+    "@ai-sdk/react": "^2.0.29",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",

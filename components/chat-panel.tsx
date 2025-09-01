@@ -1,88 +1,176 @@
-"use client"
+"use client";
 
-import { Conversation, ConversationContent, ConversationScrollButton } from "@/components/conversation"
-import { Message, MessageAvatar, MessageContent } from "@/components/message"
-import { PromptInput, PromptInputButton, PromptInputSubmit, PromptInputTextarea, PromptInputToolbar, PromptInputTools } from "@/components/prompt-input"
-import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
-import * as React from "react"
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/conversation";
+import { Loader } from "@/components/loader";
+import { Message, MessageContent } from "@/components/message";
+import {
+  PromptInput,
+  PromptInputButton,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+} from "@/components/prompt-input";
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningTrigger,
+} from "@/components/reasoning";
+import { Response } from "@/components/response";
+import {
+  Source,
+  Sources,
+  SourcesContent,
+  SourcesTrigger,
+} from "@/components/sources";
+import { cn } from "@/lib/utils";
+import { useChat } from "@ai-sdk/react";
+import { GlobeIcon } from "lucide-react";
+import { useState } from "react";
 
-type ChatMessage = {
-  readonly id: string
-  readonly role: "user" | "assistant"
-  readonly content: string
-}
+const models = [
+  {
+    name: "GPT 4o",
+    value: "openai/gpt-4o",
+  },
+  {
+    name: "Deepseek R1",
+    value: "deepseek/deepseek-r1",
+  },
+];
 
-export type ChatPanelProps = React.ComponentProps<"div">
+export const ChatPanel = () => {
+  const [input, setInput] = useState("");
+  const [model, setModel] = useState<string>(models[0].value);
+  const [webSearch, setWebSearch] = useState(false);
+  const { messages, sendMessage, status } = useChat();
 
-/**
- * ChatPanel renders a self-contained chat UI suitable for docking on the right side.
- * It is intentionally client-only and local-state driven for demo purposes.
- */
-export function ChatPanel({ className, ...props }: ChatPanelProps) {
-  const [messages, setMessages] = React.useState<ChatMessage[]>([
-    { id: "m1", role: "assistant", content: "Hi! Ask me anything about your blueprints." },
-  ])
-
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    const text = String(formData.get("message") ?? "").trim()
-    if (!text) return
-
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: text,
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      sendMessage(
+        { text: input },
+        {
+          body: {
+            model: model,
+            webSearch: webSearch,
+          },
+        },
+      );
+      setInput("");
     }
-    const assistantMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      content: `Echo: ${text}`,
-    }
-    setMessages((prev) => [...prev, userMsg, assistantMsg])
-    event.currentTarget.reset()
-  }
+  };
 
   return (
     <div
       className={cn(
         "bg-card text-card-foreground flex h-full min-h-0 w-full flex-col rounded-b-sm border shadow-sm",
-        className
-      )}
-      {...props}
-    >
-      <div className="flex items-center justify-between gap-2 px-4 py-2">
-        <p className="font-medium">Chat</p>
-      </div>
-      <Separator />
+      )}>      <div className="flex flex-col h-full">
+        <Conversation className="h-full">
+          <ConversationContent>
+            {messages.map((message) => (
+              <div key={message.id}>
+                {message.role === "assistant" && (
+                  <Sources>
+                    <SourcesTrigger
+                      count={
+                        message.parts.filter(
+                          (part) => part.type === "source-url",
+                        ).length
+                      }
+                    />
+                    {message.parts.filter((part) => part.type === "source-url").map((part, i) => (
+                      <SourcesContent key={`${message.id}-${i}`}>
+                        <Source
+                          key={`${message.id}-${i}`}
+                          href={part.url}
+                          title={part.url}
+                        />
+                      </SourcesContent>
+                    ))}
+                  </Sources>
+                )}
+                <Message from={message.role} key={message.id}>
+                  <MessageContent>
+                    {message.parts.map((part, i) => {
+                      switch (part.type) {
+                        case "text":
+                          return (
+                            <Response key={`${message.id}-${i}`}>
+                              {part.text}
+                            </Response>
+                          );
+                        case "reasoning":
+                          return (
+                            <Reasoning
+                              key={`${message.id}-${i}`}
+                              className="w-full"
+                              isStreaming={status === "streaming"}
+                            >
+                              <ReasoningTrigger />
+                              <ReasoningContent>{part.text}</ReasoningContent>
+                            </Reasoning>
+                          );
+                        default:
+                          return null;
+                      }
+                    })}
+                  </MessageContent>
+                </Message>
+              </div>
+            ))}
+            {status === "submitted" && <Loader />}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
 
-      <Conversation className="min-h-0 flex-1">
-        <ConversationContent>
-          {messages.map((m) => (
-            <Message key={m.id} from={m.role}>
-              <MessageAvatar src={m.role === "user" ? "/vercel.svg" : "/next.svg"} name={m.role} />
-              <MessageContent>{m.content}</MessageContent>
-            </Message>
-          ))}
-        </ConversationContent>
-        <ConversationScrollButton />
-      </Conversation>
-
-      <div className="border-t p-2">
-        <PromptInput onSubmit={handleSubmit}>
-          <PromptInputTextarea aria-label="Message" />
+        <PromptInput onSubmit={handleSubmit} className="mt-4">
+          <PromptInputTextarea
+            onChange={(e) => setInput(e.target.value)}
+            value={input}
+          />
           <PromptInputToolbar>
             <PromptInputTools>
-              <PromptInputButton variant="ghost">+
+              <PromptInputButton
+                variant={webSearch ? "default" : "ghost"}
+                onClick={() => setWebSearch(!webSearch)}
+              >
+                <GlobeIcon size={16} />
+                <span>Search</span>
               </PromptInputButton>
+              <PromptInputModelSelect
+                onValueChange={(value) => {
+                  setModel(value);
+                }}
+                value={model}
+              >
+                <PromptInputModelSelectTrigger>
+                  <PromptInputModelSelectValue />
+                </PromptInputModelSelectTrigger>
+                <PromptInputModelSelectContent>
+                  {models.map((model) => (
+                    <PromptInputModelSelectItem key={model.value} value={model.value}>
+                      {model.name}
+                    </PromptInputModelSelectItem>
+                  ))}
+                </PromptInputModelSelectContent>
+              </PromptInputModelSelect>
             </PromptInputTools>
-            <PromptInputSubmit aria-label="Send" />
+            <PromptInputSubmit disabled={!input} status={status} />
           </PromptInputToolbar>
         </PromptInput>
       </div>
     </div>
-  )
-}
+  );
+};
 
-
+export default ChatPanel;
