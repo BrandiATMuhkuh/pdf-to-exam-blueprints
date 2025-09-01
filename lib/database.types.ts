@@ -36,7 +36,7 @@ export type Database = {
     Tables: {
       blueprint_edges: {
         Row: {
-          blueprint_id: string | null
+          blueprint_id: string
           created_at: string
           description: string | null
           edget_id: string
@@ -46,7 +46,7 @@ export type Database = {
           weight: number
         }
         Insert: {
-          blueprint_id?: string | null
+          blueprint_id: string
           created_at?: string
           description?: string | null
           edget_id?: string
@@ -56,7 +56,7 @@ export type Database = {
           weight?: number
         }
         Update: {
-          blueprint_id?: string | null
+          blueprint_id?: string
           created_at?: string
           description?: string | null
           edget_id?: string
@@ -67,11 +67,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "edge_blueprint_id_fkey1"
+            foreignKeyName: "blueprint_edges_blueprint_id_fkey"
             columns: ["blueprint_id"]
             isOneToOne: false
-            referencedRelation: "blueprint_edges"
-            referencedColumns: ["edget_id"]
+            referencedRelation: "blueprints"
+            referencedColumns: ["blueprint_id"]
           },
           {
             foreignKeyName: "edge_parent_id_fkey"
@@ -81,6 +81,33 @@ export type Database = {
             referencedColumns: ["edget_id"]
           },
         ]
+      }
+      blueprints: {
+        Row: {
+          ai_notes: string
+          blueprint_id: string
+          created_at: string
+          description: string
+          file_id: string
+          name: string
+        }
+        Insert: {
+          ai_notes?: string
+          blueprint_id?: string
+          created_at?: string
+          description?: string
+          file_id?: string
+          name?: string
+        }
+        Update: {
+          ai_notes?: string
+          blueprint_id?: string
+          created_at?: string
+          description?: string
+          file_id?: string
+          name?: string
+        }
+        Relationships: []
       }
     }
     Views: {
