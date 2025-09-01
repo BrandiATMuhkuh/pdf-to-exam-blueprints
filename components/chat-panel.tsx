@@ -47,7 +47,7 @@ export function ChatPanel({ className, ...props }: ChatPanelProps) {
   return (
     <div
       className={cn(
-        "bg-card text-card-foreground flex h-full min-h-0 w-full flex-col rounded-xl border shadow-sm",
+        "bg-card text-card-foreground flex h-full min-h-0 w-full flex-col rounded-b-sm border shadow-sm",
         className
       )}
       {...props}
