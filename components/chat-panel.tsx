@@ -10,15 +10,10 @@ import { Message, MessageContent } from "@/components/message";
 import {
   PromptInput,
   PromptInputButton,
-  PromptInputModelSelect,
-  PromptInputModelSelectContent,
-  PromptInputModelSelectItem,
-  PromptInputModelSelectTrigger,
-  PromptInputModelSelectValue,
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputToolbar,
-  PromptInputTools,
+  PromptInputTools
 } from "@/components/prompt-input";
 import {
   Reasoning,
@@ -34,39 +29,34 @@ import {
 } from "@/components/sources";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { GlobeIcon } from "lucide-react";
-import { useState } from "react";
+import { GlobeIcon, PaperclipIcon } from "lucide-react";
+import { useRef, useState } from "react";
 
-const models = [
-  {
-    name: "GPT 4o",
-    value: "openai/gpt-4o",
-  },
-  {
-    name: "Deepseek R1",
-    value: "deepseek/deepseek-r1",
-  },
-];
+
 
 export const ChatPanel = () => {
   const [input, setInput] = useState("");
-  const [model, setModel] = useState<string>(models[0].value);
   const [webSearch, setWebSearch] = useState(false);
+  const [files, setFiles] = useState<FileList | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { messages, sendMessage, status } = useChat();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim()) {
+    if (input.trim() || files) {
       sendMessage(
-        { text: input },
+        { text: input, files },
         {
           body: {
-            model: model,
             webSearch: webSearch,
           },
         },
       );
       setInput("");
+      setFiles(undefined);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -105,7 +95,7 @@ export const ChatPanel = () => {
                       switch (part.type) {
                         case "text":
                           return (
-                            <Response key={`${message.id}-${i}`}>
+                            <Response key={`${message.id}-${i}`} parseIncompleteMarkdown>
                               {part.text}
                             </Response>
                           );
@@ -119,6 +109,18 @@ export const ChatPanel = () => {
                               <ReasoningTrigger />
                               <ReasoningContent>{part.text}</ReasoningContent>
                             </Reasoning>
+                          );
+                        case "file":
+                          return (
+                            <a
+                              key={`${message.id}-${i}`}
+                              href={part.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline"
+                            >
+                              {part.filename ?? part.url}
+                            </a>
                           );
                         default:
                           return null;
@@ -140,6 +142,43 @@ export const ChatPanel = () => {
           />
           <PromptInputToolbar>
             <PromptInputTools>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={(event) => {
+                  const inputEl = event.target;
+                  const selected = inputEl.files;
+                  if (!selected) {
+                    setFiles(undefined);
+                    return;
+                  }
+                  const allowedTypes = new Set([
+                    "application/pdf",
+                    "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                  ]);
+                  const allowedExts = new Set(["pdf", "doc", "docx"]);
+                  const dataTransfer = new DataTransfer();
+                  Array.from(selected).forEach((file) => {
+                    const ext = file.name.toLowerCase().split(".").pop() ?? "";
+                    if (allowedTypes.has(file.type) || allowedExts.has(ext)) {
+                      dataTransfer.items.add(file);
+                    }
+                  });
+                  const filtered = dataTransfer.files;
+                  inputEl.files = filtered;
+                  setFiles(filtered.length > 0 ? filtered : undefined);
+                }}
+                className="hidden"
+              />
+              <PromptInputButton
+                variant={files ? "default" : "ghost"}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <PaperclipIcon size={16} />
+                <span>Attach</span>
+              </PromptInputButton>
               <PromptInputButton
                 variant={webSearch ? "default" : "ghost"}
                 onClick={() => setWebSearch(!webSearch)}
@@ -147,25 +186,8 @@ export const ChatPanel = () => {
                 <GlobeIcon size={16} />
                 <span>Search</span>
               </PromptInputButton>
-              <PromptInputModelSelect
-                onValueChange={(value) => {
-                  setModel(value);
-                }}
-                value={model}
-              >
-                <PromptInputModelSelectTrigger>
-                  <PromptInputModelSelectValue />
-                </PromptInputModelSelectTrigger>
-                <PromptInputModelSelectContent>
-                  {models.map((model) => (
-                    <PromptInputModelSelectItem key={model.value} value={model.value}>
-                      {model.name}
-                    </PromptInputModelSelectItem>
-                  ))}
-                </PromptInputModelSelectContent>
-              </PromptInputModelSelect>
             </PromptInputTools>
-            <PromptInputSubmit disabled={!input} status={status} />
+            <PromptInputSubmit disabled={!input && !files} status={status} />
           </PromptInputToolbar>
         </PromptInput>
       </div>
