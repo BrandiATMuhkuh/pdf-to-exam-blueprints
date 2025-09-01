@@ -18,11 +18,20 @@ export async function POST(req: Request) {
     messages: convertToModelMessages(messages),
     system:
       "You are a helpful assistant that can answer questions and help with tasks",
+
+    providerOptions: {
+      openai: {
+        reasoningEffort: "low",
+        summary: "auto"
+      },
+    },
   });
 
   // send sources and reasoning back to the client
   return result.toUIMessageStreamResponse({
     sendSources: true,
     sendReasoning: true,
+    sendFinish: true,
+    sendStart: true
   });
 }
