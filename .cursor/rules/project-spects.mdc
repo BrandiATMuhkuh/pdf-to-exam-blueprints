@@ -1,0 +1,28 @@
+---
+description: This files contains project specs like table names
+globs:
+alwaysApply: true
+---
+The goal of this project is to generate examp blueprints. It's basically a list of topics and sub-topcis with weights. Whereas the weights must always sum up to 100%. Keep in mind a topic can be divided by sub-topics where the sub-topics must again sum up to 100%.
+
+This project has only 1 table called: `blueprint_edges` which the following schemas. Important, when the `parent_id` is empty it means it's the root node.
+
+
+```
+create table public.blueprint_edges (
+  edget_id uuid not null default gen_random_uuid (),
+  created_at timestamp with time zone not null default now(),
+  parent_id uuid null,
+  title text null default ''::text,
+  description text null default ''::text,
+  weight smallint not null default '0'::smallint,
+  position integer not null default '-1'::integer,
+  blueprint_id uuid null,
+  constraint edges_pkey primary key (edget_id),
+  constraint edge_blueprint_id_fkey1 foreign KEY (blueprint_id) references blueprint_edges (edget_id) on delete CASCADE,
+  constraint edge_parent_id_fkey foreign KEY (parent_id) references blueprint_edges (edget_id) on delete CASCADE
+) TABLESPACE pg_default;
+```
+
+
+
