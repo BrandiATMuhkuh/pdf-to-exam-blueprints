@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { ChatPanel } from "@/components/chat-panel"
+import { ChatSidebar } from "@/components/chat-sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -70,9 +70,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="hidden md:flex w-[28rem] min-h-0">
-            <ChatPanel className="h-full w-full" />
-          </div>
+          <ChatSidebar className="hidden md:block" />
         </div>
       </SidebarInset>
     </SidebarProvider>

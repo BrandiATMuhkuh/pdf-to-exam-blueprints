@@ -8,7 +8,9 @@ The goal of this project is to generate examp blueprints. It's basically a list 
 
 This project has only 2 table called: `blueprint_edges` and `blueprint_edges` which the following schemas. Important, when the `parent_id` is empty it means it's a root node.
 
-You can fine the typescript/supabase definition at `/lib/database.types.ts`
+You can fine the typescript/supabase definition at `/lib/database.types.ts`.
+To find the UI components for the UI chat, look at https://ai-sdk.dev/elements/overview and `/components`.
+You can find all existing shardcn components at `/components`
 
 ```
 create table public.blueprint_edges (
