@@ -67,7 +67,7 @@ export async function POST(req: Request) {
                 ],
             },
         ],
-        maxOutputTokens: 10000,
+        maxOutputTokens: 80000,
         experimental_output: Output.object({
             schema: z.object({
                 edges: z.array(
