@@ -77,7 +77,53 @@ export const ChatPanel = () => {
                                     <MessageContent>
                                         {message.parts.map((part, i) => {
                                             switch (part.type) {
+                                                case "tool-updateBlueprint":
+                                                    return (
+                                                        <Tool
+                                                            defaultOpen={false}
+                                                            key={`${message.id}-${i}`}
+                                                        >
+                                                            <ToolHeader
+                                                                type="tool-updateBlueprint"
+                                                                state={part.state}
+                                                            />
+                                                            <ToolContent>
+                                                                <ToolInput input={part.input} />
+                                                                <ToolOutput
+                                                                    output={
+                                                                        <Response>
+                                                                            {part.output as string}
+                                                                        </Response>
+                                                                    }
+                                                                    errorText={part.errorText}
+                                                                />
+                                                            </ToolContent>
+                                                        </Tool>
+                                                    );
                                                 case "tool-addEdge":
+                                                    return (
+                                                        <Tool
+                                                            defaultOpen={false}
+                                                            key={`${message.id}-${i}`}
+                                                        >
+                                                            <ToolHeader
+                                                                type="tool-addEdge"
+                                                                state={part.state}
+                                                            />
+                                                            <ToolContent>
+                                                                <ToolInput input={part.input} />
+                                                                <ToolOutput
+                                                                    output={
+                                                                        <Response>
+                                                                            {part.output as string}
+                                                                        </Response>
+                                                                    }
+                                                                    errorText={part.errorText}
+                                                                />
+                                                            </ToolContent>
+                                                        </Tool>
+                                                    );
+                                                case "tool-moveEdge":
                                                     return (
                                                         <Tool
                                                             defaultOpen={false}
