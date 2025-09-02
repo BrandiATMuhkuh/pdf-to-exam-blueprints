@@ -43,7 +43,7 @@ function useBlueprintData(id: string) {
 
     updateBlueprints();
     const channel = supabase
-      .channel("public-blueprints-sidebar")
+      .channel("blueprint-component-subscriptions")
       .on(
         "postgres_changes",
         {
