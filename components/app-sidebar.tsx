@@ -18,7 +18,6 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar";
 import { ProjectName } from "@/components/version-switcher";
-import { PlusIcon } from "lucide-react";
 
 type BlueprintRow = Tables<"blueprints">;
 
@@ -65,10 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     asChild
                                     className="w-full justify-center bg-black text-white hover:bg-black/90"
                                 >
-                                    <a href={`/`}>
-                                        <PlusIcon className="mr-2 size-4" />
-                                        New
-                                    </a>
+                                    <a href={`/`}>Import</a>
                                 </Button>
                             </SidebarMenuItem>
                         </SidebarMenu>

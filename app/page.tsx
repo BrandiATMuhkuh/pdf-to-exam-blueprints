@@ -1,6 +1,7 @@
 "use client";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { Loader } from "@/components/loader";
 import { Badge } from "@/components/ui/badge";
 import {
     Breadcrumb,
@@ -234,8 +235,16 @@ export default function Page() {
                                             type="button"
                                             onClick={handleAnalyze}
                                             disabled={!selectedFile || isLoading}
+                                            aria-busy={isLoading}
                                         >
-                                            Analyze
+                                            {isLoading ? (
+                                                <>
+                                                    <Loader size={16} />
+                                                    Analyzing…
+                                                </>
+                                            ) : (
+                                                "Analyze"
+                                            )}
                                         </Button>
                                     </CardFooter>
                                 </Card>
