@@ -11,6 +11,7 @@ export type UiBlueprint = {
     readonly name: string;
     readonly description?: string;
     readonly ai_notes: string;
+    readonly possibleDuplicateOf?: string;
     isSelected: boolean;
     status: "idle" | "importing" | "done" | "error";
     blueprintId?: string;
@@ -43,6 +44,7 @@ export function BlueprintImportWizard() {
             name: bp.name,
             description: bp.description,
             ai_notes: bp.ai_notes,
+            possibleDuplicateOf: bp.possibleDuplicateOf,
             isSelected: true,
             status: "idle",
         }));

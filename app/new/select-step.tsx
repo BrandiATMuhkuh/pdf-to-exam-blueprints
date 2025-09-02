@@ -67,7 +67,16 @@ export function SelectStep({
                                     ) : null}
                                 </div>
                             </div>
-                            <div className="pl-2">
+                            <div className="pl-2 flex flex-col gap-1">
+                                {bp.possibleDuplicateOf && (
+                                    <Badge
+                                        variant="outline"
+                                        className="text-orange-600 border-orange-600"
+                                        title={bp.possibleDuplicateOf}
+                                    >
+                                        Duplicate
+                                    </Badge>
+                                )}
                                 {bp.status === "done" && bp.blueprintId ? (
                                     <a
                                         href={`/bp/${bp.blueprintId}`}

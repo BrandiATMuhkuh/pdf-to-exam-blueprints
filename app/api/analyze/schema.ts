@@ -15,7 +15,7 @@ export const blueprintSchema = z.object({
                     .string()
                     .optional()
                     .describe(
-                        "The name of the possible duplicate blueprint. Keep undefined if it's not the case"
+                        "In case you think this is a dublicate write DUPLICATE. Otherwise keep it undefined."
                     ),
             })
         )
