@@ -87,15 +87,7 @@ ${JSON.stringify(edges, null, 2)}
                         console.log("error", error);
                         throw new Error(`Failed to insert edge: ${error.message}`);
                     }
-                    return {
-                        edgeId: data.edget_id,
-                        title: data.title ?? "",
-                        description: data.description ?? "",
-                        weight: data.weight,
-                        position: data.position,
-                        parentId: data.parent_id,
-                        blueprintId: data.blueprint_id,
-                    };
+                    return data;
                 },
             }),
         },
