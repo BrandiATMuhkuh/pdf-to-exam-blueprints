@@ -1,3 +1,4 @@
+import supabase from "@/lib/supabaseClient";
 import { openai } from "@ai-sdk/openai";
 import { generateText, Output } from "ai";
 import { v4 } from "uuid";
@@ -83,8 +84,36 @@ export async function POST(req: Request) {
         }),
     });
 
+    // let's save the blueprint to the DB
+
+    const { data: blueprintData, error: blueprintError } = await supabase
+        .from("blueprints")
+        .insert({
+            name,
+            description,
+            ai_notes,
+        })
+        .select()
+        .single();
+
+    if (blueprintError) {
+        console.log("blueprintError", blueprintError);
+        throw new Error(`Failed to save blueprint: ${blueprintError.message}`);
+    }
+
+    const { blueprint_id } = blueprintData;
+
+    // let's save the edges to the DB
+    const { error: edgesError } = await supabase
+        .from("blueprint_edges")
+        .insert(experimental_output.edges.map((edge) => ({ ...edge, blueprint_id })));
+    if (edgesError) {
+        console.log("edgesError", edgesError);
+        throw new Error(`Failed to save edges: ${edgesError.message}`);
+    }
+
     console.log("experimental_output", experimental_output);
 
     // In a future implementation, persist the blueprint and file here.
-    return Response.json({ success: true, blueprint_id: Math.random() });
+    return Response.json({ success: true, blueprint_id: blueprint_id });
 }
