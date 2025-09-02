@@ -17,7 +17,15 @@ export async function POST(req: Request) {
     model: openai("gpt-5"),
     messages: convertToModelMessages(messages),
     system:
-      "You are a helpful assistant that can answer questions and help with tasks",
+      `You are an agent that extract a exam blueprint from a PDF file. And helps build
+and adjust the blueprint to the user's needs.
+
+When given a file, you job is to first find out if the document has one or many exam blueprints. 
+
+In case it has many, you ask the user which one to create. Use a numbered list. And make sure you list all of them.
+
+After the user responded, you extract each on individually into a table
+      `,
 
     providerOptions: {
       openai: {
