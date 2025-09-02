@@ -1,9 +1,11 @@
 "use client";
-import { Tables } from "@/lib/database.types";
 
 import supabase from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import { BlueprintHeader } from "./blueprint-header";
+import { BluePrintWithContent, query } from "./blueprint-types";
+
+
 
 export function BlueprintComponent({ id }: { id: string }) {
   const { blueprint } = useBlueprintData(id);
@@ -22,21 +24,20 @@ export function BlueprintComponent({ id }: { id: string }) {
 
 
 function useBlueprintData(id: string) {
-  const [blueprint, setBlueprint] = useState<Tables<"blueprints"> | undefined>(undefined);
+  const [blueprint, setBlueprint] = useState<BluePrintWithContent | undefined>(undefined);
 
   useEffect(() => {
     const updateBlueprints = async () => {
-      const { data, error } = await supabase
-        .from("blueprints")
-        .select("*")
+      const { data, error } = await query
         .eq("blueprint_id", id)
         .single();
+
 
       if (error) {
         console.log("error", error);
         return;
       }
-      setBlueprint(data ?? undefined);
+      setBlueprint(data);
     };
 
     updateBlueprints();
@@ -48,6 +49,18 @@ function useBlueprintData(id: string) {
           event: "*",
           schema: "public",
           table: "blueprints",
+          filter: `blueprint_id=eq.${id}`,
+        },
+        () => {
+          console.log("realtime:blueprints", "update received");
+          updateBlueprints();
+        }
+      ).on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "blueprint_edges",
           filter: `blueprint_id=eq.${id}`,
         },
         () => {

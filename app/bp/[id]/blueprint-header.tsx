@@ -1,7 +1,8 @@
 "use client";
-import { Tables } from "@/lib/database.types";
 
-export function BlueprintHeader({ blueprint }: { blueprint: Tables<"blueprints"> }) {
+import { BluePrintWithContent } from "./blueprint-types";
+
+export function BlueprintHeader({ blueprint }: { blueprint: BluePrintWithContent }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="text-sm text-muted-foreground">Blueprint ID: {blueprint.blueprint_id}</div>
