@@ -10,10 +10,16 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import supabase from "@/lib/supabaseClient";
 import { BlueprintComponent } from "./blueprint-component";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
+    const { data: blueprint } = await supabase
+        .from("blueprints")
+        .select("*")
+        .eq("blueprint_id", id)
+        .single();
 
     return (
         <SidebarProvider>
@@ -32,7 +38,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator className="hidden md:block" />
                             <BreadcrumbItem>
-                                <BreadcrumbPage>Details</BreadcrumbPage>
+                                <BreadcrumbPage>{blueprint?.name}</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
