@@ -1,3 +1,6 @@
+import { openai } from "@ai-sdk/openai";
+import { generateText, Output } from "ai";
+import { v4 } from "uuid";
 import { z } from "zod";
 
 export const maxDuration = 60;
@@ -19,7 +22,69 @@ export async function POST(req: Request) {
         return new Response("Invalid request", { status: 400 });
     }
 
-    console.log("parsed", parsed.data.name);
+    const { name, description, ai_notes, fileName, fileType, fileBase64 } = parsed.data;
+
+    const uuids = Array.from({ length: 100 }, () => v4());
+
+    const { experimental_output } = await generateText({
+        model: openai("gpt-5"),
+        providerOptions: {
+            openai: {
+                reasoningEffort: "low",
+            },
+        },
+
+        system: `Your job is to extract the blueprint table for the provided file. A file can often include multiple blueprints. 
+      So make sure you only extra for this blueprint
+      - name: ${name}
+      - description: ${description}
+      - ai_notes: ${ai_notes}
+
+      The content of the above list was extract from the same file before. It might not be a 1:1 match. 
+      The ai_notes are to to help you find the right blueprint in the file. 
+
+      since you might need UUIDs, here is a list to pick from. 
+
+      ${uuids.join("\n")}
+
+      `,
+
+        messages: [
+            {
+                role: "user",
+                content: [
+                    {
+                        type: "file",
+                        data: fileBase64,
+                        mediaType: fileType,
+                    },
+                ],
+            },
+        ],
+        maxOutputTokens: 10000,
+        experimental_output: Output.object({
+            schema: z.object({
+                edges: z.array(
+                    z.object({
+                        edget_id: z.uuid(),
+                        title: z.string().min(1),
+                        description: z.string().optional(),
+                        weight: z.number().int().min(0).max(100),
+                        position: z.number().int(),
+                        parent_id: z
+                            .uuid()
+                            .optional()
+                            .describe(
+                                "The parent id is the edget_id this entry belong to. If it's a root entry, this is undefined."
+                            ),
+                    })
+                ),
+            }),
+        }),
+    });
+
+    console.log("experimental_output", experimental_output);
+
     // In a future implementation, persist the blueprint and file here.
     return Response.json({ success: true, blueprint_id: Math.random() });
 }
