@@ -111,6 +111,7 @@ If possible, check if the wait's are correct. They must not exceed 100%.
 
 Important, the user can not select anything on the UI or knows any ID. So you must find it out by yourself.
 
+Keep your output very short. You can of just say "done adding xyz". 
 
 The following is the current state of the blueprint:
 

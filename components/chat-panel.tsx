@@ -95,11 +95,11 @@ export const ChatPanel = () => {
                                                 case "tool-addEdge":
                                                     return (
                                                         <Tool
-                                                            defaultOpen={true}
+                                                            defaultOpen={false}
                                                             key={`${message.id}-${i}`}
                                                         >
                                                             <ToolHeader
-                                                                type="tool-fetch_weather_data"
+                                                                type="tool-addEdge"
                                                                 state={part.state}
                                                             />
                                                             <ToolContent>
@@ -118,11 +118,11 @@ export const ChatPanel = () => {
                                                 case "tool-updateEdge":
                                                     return (
                                                         <Tool
-                                                            defaultOpen={true}
+                                                            defaultOpen={false}
                                                             key={`${message.id}-${i}`}
                                                         >
                                                             <ToolHeader
-                                                                type="tool-fetch_weather_data"
+                                                                type="tool-updateEdge"
                                                                 state={part.state}
                                                             />
                                                             <ToolContent>
