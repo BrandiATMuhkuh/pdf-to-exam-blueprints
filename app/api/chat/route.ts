@@ -93,10 +93,32 @@ export async function POST(req: Request) {
                 .describe("The weight of the topic or sub-topic"),
         }),
         execute: async ({ edgeId, title, description, weight }) => {
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from("blueprint_edges")
                 .update({ title, description, weight })
                 .eq("edget_id", edgeId);
+
+            if (error) {
+                throw error;
+            }
+        },
+    });
+
+    const updateBlueprint = tool({
+        description: "Update the blueprint",
+        inputSchema: z.object({
+            name: z.string().min(1).describe("The name of the blueprint"),
+            description: z.string().optional().describe("The description of the blueprint"),
+        }),
+        execute: async ({ name, description }) => {
+            const { error } = await supabase
+                .from("blueprints")
+                .update({ name, description })
+                .eq("blueprint_id", blueprintId);
+
+            if (error) {
+                throw error;
+            }
         },
     });
 
@@ -125,6 +147,7 @@ ${JSON.stringify(edges, null, 2)}
         tools: {
             addEdge,
             updateEdge,
+            updateBlueprint,
         },
 
         providerOptions: {
