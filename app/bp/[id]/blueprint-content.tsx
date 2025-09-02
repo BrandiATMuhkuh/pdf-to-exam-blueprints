@@ -94,6 +94,11 @@ export function BlueprintContent({ blueprint }: { blueprint: BluePrintWithConten
   return (
     <div className="rounded-md border overflow-x-auto min-w-0 max-w-full">
       <table className="w-full text-sm table-fixed">
+        <colgroup>
+          <col className="w-[30%]" />
+          <col className="w-[60%]" />
+          <col className="w-[10%]" />
+        </colgroup>
         <thead className="bg-muted/50">
           <tr>
             <th className="text-left p-2">Title</th>
