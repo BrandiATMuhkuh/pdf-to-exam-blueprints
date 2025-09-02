@@ -2,6 +2,7 @@
 
 import supabase from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
+import { BlueprintContent } from "./blueprint-content";
 import { BlueprintHeader } from "./blueprint-header";
 import { BluePrintWithContent, query } from "./blueprint-types";
 
@@ -17,7 +18,7 @@ export function BlueprintComponent({ id }: { id: string }) {
   return (
     <div className="flex flex-col gap-4">
       <BlueprintHeader blueprint={blueprint} />
-      <div className="rounded-md border p-4">UI goes here…</div>
+      <BlueprintContent blueprint={blueprint} />
     </div>
   );
 }
