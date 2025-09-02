@@ -206,7 +206,8 @@ export default function Page() {
                                     <CardHeader>
                                         <CardTitle>Import Blueprint PDF</CardTitle>
                                         <CardDescription>
-                                            Select a PDF to analyze. No upload will happen yet.
+                                            Select a PDF to analyze. Convert other files to PDF
+                                            first. Open and print to PDF.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -255,7 +256,9 @@ export default function Page() {
                                         <CardDescription>
                                             {blueprints.length} blueprint
                                             {blueprints.length === 1 ? "" : "s"} detected. Choose
-                                            which ones to import.
+                                            which ones to import. Imports can take several minutes
+                                            per blueprint. Please keep this page open during the
+                                            process.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -329,7 +332,8 @@ export default function Page() {
                                         <div className="flex items-center gap-3">
                                             {isImporting ? (
                                                 <p className="text-muted-foreground text-sm">
-                                                    Importing {importedCount}/{plannedImportCount}
+                                                    Importing {importedCount}/{plannedImportCount}—
+                                                    this can take many minutes!!!
                                                 </p>
                                             ) : null}
                                             <Button

@@ -43,10 +43,12 @@ export async function POST(req: Request) {
       - description: ${description}
       - ai_notes: ${ai_notes}
 
-      The content of the above list was extract from the same file before. It might not be a 1:1 match. 
+      The content of the above list was extracted from the same file before. It might not be a 1:1 match. 
       The ai_notes are to to help you find the right blueprint in the file. 
 
-      since you might need UUIDs, here is a list to pick from. 
+      Please do some clearnup around row numbers. You will often find auto generated prefixes like "1.", "2.", "3.", "a.", "b.", "c.", "II.", "III.", "IV.", "V.", "VI.", "VII.", "VIII.", "IX.", "X." and so on. You can ignore them. Because that's part of the position and parents/child relationship now
+
+      Since you might need UUIDs, here is a list to pick from. 
 
       ${uuids.join("\n")}
 
@@ -73,7 +75,7 @@ export async function POST(req: Request) {
                         edget_id: z.uuid(),
                         title: z.string().min(1),
                         description: z.string().optional(),
-                        weight: z.number().int().min(0).max(100),
+                        weight: z.number().int().min(0).max(100).optional(),
                         position: z.number().int(),
                         parent_id: z
                             .uuid()
@@ -114,8 +116,6 @@ export async function POST(req: Request) {
         console.log("edgesError", edgesError);
         throw new Error(`Failed to save edges: ${edgesError.message}`);
     }
-
-    console.log("experimental_output", experimental_output);
 
     // In a future implementation, persist the blueprint and file here.
     return Response.json({ success: true, blueprint_id: blueprint_id });

@@ -11,6 +11,12 @@ export const blueprintSchema = z.object({
                     .describe(
                         "Notes for the AI to remember the gist of this exam blueprint in the future."
                     ),
+                possibleDuplicateOf: z
+                    .string()
+                    .optional()
+                    .describe(
+                        "The name of the possible duplicate blueprint. Keep undefined if it's not the case"
+                    ),
             })
         )
         .describe("All blueprints found in the file; most files have one."),

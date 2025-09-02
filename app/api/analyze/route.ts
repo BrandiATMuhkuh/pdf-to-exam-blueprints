@@ -1,3 +1,4 @@
+import supabase from "@/lib/supabaseClient";
 import { openai, OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateText, Output } from "ai";
 import { z } from "zod";
@@ -22,9 +23,24 @@ export async function POST(req: Request) {
 
     const { fileType, fileBase64 } = parsed.data;
 
+    const { data: blueprints, error: blueprintsError } = await supabase
+        .from("blueprints")
+        .select("name");
+    if (blueprintsError) {
+        console.log("blueprintsError", blueprintsError);
+        throw new Error(`Failed to load blueprints: ${blueprintsError.message}`);
+    }
+
     const { experimental_output } = await generateText({
         model: openai("gpt-5"),
-        system: `Find all exam blueprints in this file. A blueprint in this case is not the content (table) but the topic. Some pdfs have multiple blueprints.`,
+        system: `Find all exam blueprints in this file. A blueprint in this case is not the content (table) but the topic. Some pdfs have multiple blueprints.
+        
+        
+        To prevent dublicates the following table includes the name of all current blueprints in the DB
+
+        ${blueprints.map((bp) => `- ${bp.name}`).join("\n")}
+
+        `,
         messages: [
             {
                 role: "user",
@@ -48,6 +64,5 @@ export async function POST(req: Request) {
             } satisfies OpenAIResponsesProviderOptions,
         },
     });
-    console.log("experimental_output", experimental_output);
     return Response.json(experimental_output);
 }
