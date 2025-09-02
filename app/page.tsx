@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { ChatSidebar } from "@/components/chat-sidebar"
+import { Badge } from "@/components/ui/badge"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -28,11 +29,17 @@ export default function Page() {
     readonly description?: string
     readonly ai_notes: string
     isSelected: boolean
+    status: "idle" | "importing" | "done" | "error"
+    blueprintId?: string
   }
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [wizardStep, setWizardStep] = useState<"import" | "select">("import")
   const [blueprints, setBlueprints] = useState<UiBlueprint[]>([])
+  const [filePayload, setFilePayload] = useState<{ fileName: string; fileType: string; fileBase64: string } | null>(null)
+  const [isImporting, setIsImporting] = useState<boolean>(false)
+  const [importedCount, setImportedCount] = useState<number>(0)
+  const [plannedImportCount, setPlannedImportCount] = useState<number>(0)
   const { object, submit, isLoading, error } = useObject({
     api: "/api/analyze",
     schema: blueprintSchema,
@@ -56,11 +63,13 @@ export default function Page() {
     const reader = new FileReader()
     reader.onload = () => {
       const base64 = (reader.result as string).split(",")[1] ?? ""
-      submit({
+      const payload = {
         fileName: selectedFile.name,
         fileType: selectedFile.type || "application/pdf",
         fileBase64: base64,
-      })
+      }
+      setFilePayload(payload)
+      submit(payload)
     }
     reader.readAsDataURL(selectedFile)
   }
@@ -73,6 +82,7 @@ export default function Page() {
       description: bp.description,
       ai_notes: bp.ai_notes,
       isSelected: true,
+      status: "idle",
     }))
     setBlueprints(nextBlueprints)
     setWizardStep("select")
@@ -83,6 +93,54 @@ export default function Page() {
     setBlueprints((prev) =>
       prev.map((bp, i) => (i === index ? { ...bp, isSelected: !bp.isSelected } : bp))
     )
+  }
+
+  async function handleImportSelected(): Promise<void> {
+    if (!filePayload) {
+      console.log("import", { message: "Missing file payload" })
+      return
+    }
+    const selectedCount = blueprints.filter((b) => b.isSelected).length
+    if (selectedCount === 0) {
+      console.log("import", { message: "No blueprints selected" })
+      return
+    }
+    setIsImporting(true)
+    setImportedCount(0)
+    setPlannedImportCount(selectedCount)
+    for (let i = 0; i < blueprints.length; i++) {
+      const bp = blueprints[i]
+      if (!bp?.isSelected) continue
+      setBlueprints((prev) => prev.map((b, idx) => (idx === i ? { ...b, status: "importing" } : b)))
+      try {
+        const res = await fetch("/api/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: bp.name,
+            description: bp.description,
+            ai_notes: bp.ai_notes,
+            ...filePayload,
+          }),
+        })
+        if (!res.ok) throw new Error("Import failed")
+        const json = (await res.json()) as { success?: boolean; blueprint_id?: string | number }
+        if (!json?.success || json.blueprint_id === undefined || json.blueprint_id === null) {
+          throw new Error("Invalid response")
+        }
+        setBlueprints((prev) =>
+          prev.map((b, idx) =>
+            idx === i ? { ...b, status: "done", blueprintId: String(json.blueprint_id), isSelected: false } : b
+          )
+        )
+        setImportedCount((c) => c + 1)
+        console.log("import-progress", { current: i + 1, total: selectedCount, name: bp.name })
+      } catch {
+        console.log("error", { message: "Failed to import blueprint", name: bp.name })
+        setBlueprints((prev) => prev.map((b, idx) => (idx === i ? { ...b, status: "error" } : b)))
+      }
+    }
+    setIsImporting(false)
   }
 
   return (
@@ -150,18 +208,32 @@ export default function Page() {
                   <CardContent>
                     <div className="space-y-4">
                       {blueprints.map((bp, index) => (
-                        <label key={bp.name + index} className="flex cursor-pointer gap-3 rounded-md border p-3 hover:bg-muted/40">
-                          <input
-                            type="checkbox"
-                            checked={bp.isSelected}
-                            onChange={() => handleToggleBlueprint(index)}
-                            className="mt-1 h-4 w-4"
-                            aria-label={`Select ${bp.name}`}
-                          />
-                          <div className="min-w-0">
-                            <p className="font-medium leading-none">{bp.name}</p>
-                            {bp.description ? (
-                              <p className="text-muted-foreground mt-1 text-sm line-clamp-2">{bp.description}</p>
+                        <label key={bp.name + index} className="flex cursor-pointer items-start justify-between gap-3 rounded-md border p-3 hover:bg-muted/40">
+                          <div className="flex gap-3">
+                            <input
+                              type="checkbox"
+                              checked={bp.isSelected}
+                              onChange={() => handleToggleBlueprint(index)}
+                              className="mt-1 h-4 w-4"
+                              aria-label={`Select ${bp.name}`}
+                              disabled={isImporting}
+                            />
+                            <div className="min-w-0">
+                              <p className="font-medium leading-none">{bp.name}</p>
+                              {bp.description ? (
+                                <p className="text-muted-foreground mt-1 text-sm line-clamp-2">{bp.description}</p>
+                              ) : null}
+                            </div>
+                          </div>
+                          <div className="pl-2">
+                            {bp.status === "done" && bp.blueprintId ? (
+                              <a href={`/bp/${bp.blueprintId}`} aria-label={`Open ${bp.name}`}>
+                                <Badge variant="secondary" className="bg-green-500">Done</Badge>
+                              </a>
+                            ) : bp.status === "importing" ? (
+                              <Badge variant="outline">Importing…</Badge>
+                            ) : bp.status === "error" ? (
+                              <Badge variant="destructive">Error</Badge>
                             ) : null}
                           </div>
                         </label>
@@ -172,9 +244,16 @@ export default function Page() {
                     <Button type="button" variant="outline" onClick={() => setWizardStep("import")}>
                       Back
                     </Button>
-                    <Button type="button" onClick={() => console.log("import-selected", { selected: blueprints.filter((b) => b.isSelected) })}>
-                      Continue
-                    </Button>
+                    <div className="flex items-center gap-3">
+                      {isImporting ? (
+                        <p className="text-muted-foreground text-sm">
+                          Importing {importedCount}/{plannedImportCount}
+                        </p>
+                      ) : null}
+                      <Button type="button" onClick={handleImportSelected} disabled={isImporting}>
+                        Import
+                      </Button>
+                    </div>
                   </CardFooter>
                 </Card>
               )}
