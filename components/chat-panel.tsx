@@ -16,11 +16,13 @@ import {
 } from "@/components/prompt-input";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/reasoning";
 import { Response } from "@/components/response";
+import { Suggestion } from "@/components/suggestion";
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/tool";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
+
 export const ChatPanel = () => {
     const [input, setInput] = useState("");
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -44,6 +46,18 @@ export const ChatPanel = () => {
                 fileInputRef.current.value = "";
             }
         }
+    };
+
+    const suggestions = [
+        "rebalance blueprint",
+        "check for missing weight",
+        "add new topic",
+        "review structure",
+        "optimize weights",
+    ];
+
+    const handleSuggestionClick = (suggestion: string) => {
+        setInput(suggestion);
     };
 
     return (
@@ -154,6 +168,25 @@ export const ChatPanel = () => {
                     </ConversationContent>
                     <ConversationScrollButton />
                 </Conversation>
+
+                {/* Show suggestions when chat is empty */}
+                {messages.length === 0 && (
+                    <div className="px-4 py-6">
+                        <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                            Try asking about:
+                        </h3>
+                        <div className="grid grid-cols-2 gap-2">
+                            {suggestions.map((suggestion) => (
+                                <Suggestion
+                                    key={suggestion}
+                                    suggestion={suggestion}
+                                    onClick={handleSuggestionClick}
+                                    className="w-full justify-center"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <PromptInput onSubmit={handleSubmit} className="mt-4">
                     <PromptInputTextarea onChange={(e) => setInput(e.target.value)} value={input} />
