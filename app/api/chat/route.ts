@@ -75,6 +75,31 @@ export async function POST(req: Request) {
         },
     });
 
+    const updateEdge = tool({
+        description:
+            "Update an entry in the blueprint_edges table. This does NOT allow you to move a node!",
+        inputSchema: z.object({
+            edgeId: z.string().uuid().describe("The id of the edge to update"),
+            title: z.string().min(1).describe("The title of the topic or sub-topic"),
+            description: z
+                .string()
+                .optional()
+                .describe("The description of the topic or sub-topic"),
+            weight: z
+                .number()
+                .int()
+                .min(0)
+                .max(100)
+                .describe("The weight of the topic or sub-topic"),
+        }),
+        execute: async ({ edgeId, title, description, weight }) => {
+            const { data, error } = await supabase
+                .from("blueprint_edges")
+                .update({ title, description, weight })
+                .eq("edget_id", edgeId);
+        },
+    });
+
     const result = streamText({
         model: openai("gpt-5"),
         messages: convertToModelMessages(messages),
@@ -95,9 +120,10 @@ ${JSON.stringify(edges, null, 2)}
 
 
       `,
-        stopWhen: stepCountIs(5),
+        stopWhen: stepCountIs(10),
         tools: {
             addEdge,
+            updateEdge,
         },
 
         providerOptions: {
