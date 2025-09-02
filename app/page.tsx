@@ -18,20 +18,14 @@ import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { experimental_useObject as useObject } from "@ai-sdk/react"
 import { useState } from "react"
-import { z } from "zod"
+import { blueprintSchema } from "./api/analyze/schema"
+
 
 export default function Page() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const { object, submit, isLoading, error } = useObject({
     api: "/api/analyze",
-    schema: z.object({
-      blueprints: z.array(
-        z.object({
-          name: z.string(),
-          description: z.string().optional(),
-        })
-      ),
-    }),
+    schema: blueprintSchema,
   })
 
   function handleSelectFile(event: React.ChangeEvent<HTMLInputElement>): void {
