@@ -16,10 +16,23 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { experimental_useObject as useObject } from "@ai-sdk/react"
 import { useState } from "react"
+import { z } from "zod"
 
 export default function Page() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const { object, submit, isLoading, error } = useObject({
+    api: "/api/analyze",
+    schema: z.object({
+      blueprints: z.array(
+        z.object({
+          name: z.string(),
+          description: z.string().optional(),
+        })
+      ),
+    }),
+  })
 
   function handleSelectFile(event: React.ChangeEvent<HTMLInputElement>): void {
     const nextFile = event.target.files?.[0] ?? null
@@ -36,7 +49,16 @@ export default function Page() {
       console.log("analyze", { message: "No file selected" })
       return
     }
-    console.log("analyze", { name: selectedFile.name, size: selectedFile.size })
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1] ?? ""
+      submit({
+        fileName: selectedFile.name,
+        fileType: selectedFile.type || "application/pdf",
+        fileBase64: base64,
+      })
+    }
+    reader.readAsDataURL(selectedFile)
   }
 
   return (
@@ -80,15 +102,33 @@ export default function Page() {
                     {selectedFile ? (
                       <p className="text-muted-foreground truncate text-sm">{selectedFile.name}</p>
                     ) : null}
+                    {error ? (
+                      <p className="text-destructive text-sm">Something went wrong.</p>
+                    ) : null}
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="button" onClick={handleAnalyze} disabled={!selectedFile}>
+                  <Button type="button" onClick={handleAnalyze} disabled={!selectedFile || isLoading}>
                     Analyze
                   </Button>
                 </CardFooter>
               </Card>
             </div>
+            {object?.blueprints ? (
+              <div className="mt-6">
+                <Card className="w-full max-w-2xl mx-auto">
+                  <CardHeader>
+                    <CardTitle>Detected Blueprints</CardTitle>
+                    <CardDescription>Preview of extracted structure</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="whitespace-pre-wrap text-sm">
+                      {JSON.stringify(object.blueprints, null, 2)}
+                    </pre>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : null}
           </div>
           <ChatSidebar className="hidden md:block" />
         </div>
