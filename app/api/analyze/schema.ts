@@ -13,7 +13,6 @@ export const blueprintSchema = z.object({
                     ),
             })
         )
-        .min(1)
         .describe("All blueprints found in the file; most files have one."),
 });
 
