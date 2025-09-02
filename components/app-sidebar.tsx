@@ -70,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {blueprints.map((bp) => (
                 <SidebarMenuItem key={bp.blueprint_id}>
                   <SidebarMenuButton asChild>
-                    <a href="#">{bp.name}</a>
+                    <a href={`/bp/${bp.blueprint_id}`}>{bp.name}</a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
