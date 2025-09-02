@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         providerOptions: {
             openai: {
                 reasoningEffort: "low",
-                reasoningSummary: "auto",
+                textVerbosity: "low",
             } satisfies OpenAIResponsesProviderOptions,
         },
 

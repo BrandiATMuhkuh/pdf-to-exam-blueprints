@@ -301,7 +301,11 @@ export default function Page() {
                                                                 </Badge>
                                                             </a>
                                                         ) : bp.status === "importing" ? (
-                                                            <Badge variant="outline">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="gap-2"
+                                                            >
+                                                                <Loader size={12} />
                                                                 Importing…
                                                             </Badge>
                                                         ) : bp.status === "error" ? (
@@ -332,8 +336,17 @@ export default function Page() {
                                                 type="button"
                                                 onClick={handleImportSelected}
                                                 disabled={isImporting}
+                                                aria-busy={isImporting}
+                                                className="gap-2"
                                             >
-                                                Import
+                                                {isImporting ? (
+                                                    <>
+                                                        <Loader size={16} />
+                                                        Importing…
+                                                    </>
+                                                ) : (
+                                                    "Import"
+                                                )}
                                             </Button>
                                         </div>
                                     </CardFooter>

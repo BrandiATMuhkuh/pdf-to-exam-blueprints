@@ -1,4 +1,4 @@
-import { openai } from "@ai-sdk/openai";
+import { openai, OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import { blueprintSchema } from "./schema";
@@ -41,6 +41,12 @@ export async function POST(req: Request) {
         experimental_output: Output.object({
             schema: blueprintSchema,
         }),
+        providerOptions: {
+            openai: {
+                reasoningEffort: "low",
+                textVerbosity: "low",
+            } satisfies OpenAIResponsesProviderOptions,
+        },
     });
     console.log("experimental_output", experimental_output);
     return Response.json(experimental_output);
