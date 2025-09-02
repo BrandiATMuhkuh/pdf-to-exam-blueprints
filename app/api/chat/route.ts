@@ -1,5 +1,5 @@
 import supabase from "@/lib/supabaseClient";
-import { openai } from "@ai-sdk/openai";
+import { openai, OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { convertToModelMessages, stepCountIs, streamText, tool, UIMessage } from "ai";
 import { z } from "zod";
 
@@ -102,9 +102,9 @@ ${JSON.stringify(edges, null, 2)}
 
         providerOptions: {
             openai: {
-                reasoningEffort: "low",
-                summary: "auto",
-            },
+                reasoningEffort: "minimal",
+                reasoningSummary: "auto",
+            } satisfies OpenAIResponsesProviderOptions,
         },
     });
 

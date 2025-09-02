@@ -1,5 +1,5 @@
 import supabase from "@/lib/supabaseClient";
-import { openai } from "@ai-sdk/openai";
+import { openai, OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateText, Output } from "ai";
 import { v4 } from "uuid";
 import { z } from "zod";
@@ -29,10 +29,12 @@ export async function POST(req: Request) {
 
     const { experimental_output } = await generateText({
         model: openai("gpt-5"),
+
         providerOptions: {
             openai: {
                 reasoningEffort: "low",
-            },
+                reasoningSummary: "auto",
+            } satisfies OpenAIResponsesProviderOptions,
         },
 
         system: `Your job is to extract the blueprint table for the provided file. A file can often include multiple blueprints. 
@@ -58,6 +60,7 @@ export async function POST(req: Request) {
                         type: "file",
                         data: fileBase64,
                         mediaType: fileType,
+                        filename: fileName,
                     },
                 ],
             },
