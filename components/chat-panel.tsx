@@ -9,7 +9,6 @@ import { Loader } from "@/components/loader";
 import { Message, MessageContent } from "@/components/message";
 import {
     PromptInput,
-    PromptInputButton,
     PromptInputSubmit,
     PromptInputTextarea,
     PromptInputToolbar,
@@ -17,37 +16,30 @@ import {
 } from "@/components/prompt-input";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/reasoning";
 import { Response } from "@/components/response";
-import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/sources";
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/tool";
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
-import { GlobeIcon, PaperclipIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 export const ChatPanel = () => {
     const [input, setInput] = useState("");
-    const [webSearch, setWebSearch] = useState(false);
-    const [files, setFiles] = useState<FileList | undefined>(undefined);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const { messages, sendMessage, status } = useChat();
     const params = useParams<{ id?: string | string[] }>();
     const blueprintId = Array.isArray(params?.id) ? params?.id?.[0] : params?.id;
-    console.log("blueprintId", blueprintId);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (input.trim() || files) {
+        if (input.trim()) {
             sendMessage(
-                { text: input, files },
+                { text: input },
                 {
                     body: {
-                        webSearch: webSearch,
                         blueprintId: blueprintId,
                     },
                 }
             );
             setInput("");
-            setFiles(undefined);
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
@@ -66,28 +58,6 @@ export const ChatPanel = () => {
                     <ConversationContent>
                         {messages.map((message) => (
                             <div key={message.id}>
-                                {message.role === "assistant" && (
-                                    <Sources>
-                                        <SourcesTrigger
-                                            count={
-                                                message.parts.filter(
-                                                    (part) => part.type === "source-url"
-                                                ).length
-                                            }
-                                        />
-                                        {message.parts
-                                            .filter((part) => part.type === "source-url")
-                                            .map((part, i) => (
-                                                <SourcesContent key={`${message.id}-${i}`}>
-                                                    <Source
-                                                        key={`${message.id}-${i}`}
-                                                        href={part.url}
-                                                        title={part.url}
-                                                    />
-                                                </SourcesContent>
-                                            ))}
-                                    </Sources>
-                                )}
                                 <Message from={message.role} key={message.id}>
                                     <MessageContent>
                                         {message.parts.map((part, i) => {
@@ -188,53 +158,8 @@ export const ChatPanel = () => {
                 <PromptInput onSubmit={handleSubmit} className="mt-4">
                     <PromptInputTextarea onChange={(e) => setInput(e.target.value)} value={input} />
                     <PromptInputToolbar>
-                        <PromptInputTools>
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                                onChange={(event) => {
-                                    const inputEl = event.target;
-                                    const selected = inputEl.files;
-                                    if (!selected) {
-                                        setFiles(undefined);
-                                        return;
-                                    }
-                                    const allowedTypes = new Set([
-                                        "application/pdf",
-                                        "application/msword",
-                                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                                    ]);
-                                    const allowedExts = new Set(["pdf", "doc", "docx"]);
-                                    const dataTransfer = new DataTransfer();
-                                    Array.from(selected).forEach((file) => {
-                                        const ext = file.name.toLowerCase().split(".").pop() ?? "";
-                                        if (allowedTypes.has(file.type) || allowedExts.has(ext)) {
-                                            dataTransfer.items.add(file);
-                                        }
-                                    });
-                                    const filtered = dataTransfer.files;
-                                    inputEl.files = filtered;
-                                    setFiles(filtered.length > 0 ? filtered : undefined);
-                                }}
-                                className="hidden"
-                            />
-                            <PromptInputButton
-                                variant={files ? "default" : "ghost"}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <PaperclipIcon size={16} />
-                                <span>Attach</span>
-                            </PromptInputButton>
-                            <PromptInputButton
-                                variant={webSearch ? "default" : "ghost"}
-                                onClick={() => setWebSearch(!webSearch)}
-                            >
-                                <GlobeIcon size={16} />
-                                <span>Search</span>
-                            </PromptInputButton>
-                        </PromptInputTools>
-                        <PromptInputSubmit disabled={!input && !files} status={status} />
+                        <PromptInputTools></PromptInputTools>
+                        <PromptInputSubmit disabled={!input} status={status} />
                     </PromptInputToolbar>
                 </PromptInput>
             </div>
