@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useChat } from "@ai-sdk/react";
 import { GlobeIcon, PaperclipIcon } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 
 
@@ -40,6 +41,9 @@ export const ChatPanel = () => {
   const [files, setFiles] = useState<FileList | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { messages, sendMessage, status } = useChat();
+  const params = useParams<{ id?: string | string[] }>();
+  const blueprintId = Array.isArray(params?.id) ? params?.id?.[0] : params?.id;
+  console.log("blueprintId", blueprintId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +53,7 @@ export const ChatPanel = () => {
         {
           body: {
             webSearch: webSearch,
+            blueprintId: blueprintId,
           },
         },
       );
