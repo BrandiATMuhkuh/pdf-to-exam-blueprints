@@ -49,6 +49,7 @@ export const ChatPanel = () => {
     };
 
     const suggestions = [
+        "change title",
         "rebalance blueprint",
         "check for missing weight",
         "add new topic",

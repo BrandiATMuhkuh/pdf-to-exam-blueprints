@@ -13,8 +13,6 @@ export async function POST(req: Request) {
     }: { messages: UIMessage[]; model?: string; webSearch?: boolean; blueprintId: string } =
         await req.json();
 
-    console.log("blueprintId", blueprintId);
-
     // lets load the current edges
     const { data, error } = await supabase
         .from("blueprint_edges")
@@ -104,6 +102,134 @@ export async function POST(req: Request) {
         },
     });
 
+    const moveEdge = tool({
+        description: "Move an entry in the blueprint_edges table",
+        inputSchema: z.object({
+            edgeId: z.uuid().describe("The id of the edge to move"),
+            position: z.number().int().describe("The new position of the edge"),
+            parentId: z
+                .uuid()
+                .optional()
+                .describe(
+                    "The new parent id of the edge. Can be the same as the current parent id."
+                ),
+        }),
+        execute: async ({ edgeId, position, parentId }) => {
+            // First, get the current edge to understand its current state
+            const { data: currentEdge, error: fetchError } = await supabase
+                .from("blueprint_edges")
+                .select("position, parent_id, blueprint_id")
+                .eq("edget_id", edgeId)
+                .single();
+
+            if (fetchError) {
+                throw fetchError;
+            }
+
+            if (!currentEdge) {
+                throw new Error("Edge not found");
+            }
+
+            const currentPosition = currentEdge.position;
+            const currentParentId = currentEdge.parent_id;
+            const targetParentId = parentId ?? currentParentId;
+
+            // If moving to a different parent, handle it as a special case
+            if (currentParentId !== targetParentId) {
+                // Remove from current parent's positions
+                if (currentParentId !== null) {
+                    const { data: affectedEdges } = await supabase
+                        .from("blueprint_edges")
+                        .select("edget_id, position")
+                        .eq("parent_id", currentParentId)
+                        .gte("position", currentPosition + 1);
+
+                    if (affectedEdges) {
+                        for (const edge of affectedEdges) {
+                            await supabase
+                                .from("blueprint_edges")
+                                .update({ position: edge.position - 1 })
+                                .eq("edget_id", edge.edget_id);
+                        }
+                    }
+                }
+
+                // Add to new parent's positions
+                if (targetParentId !== null) {
+                    const { data: affectedEdges } = await supabase
+                        .from("blueprint_edges")
+                        .select("edget_id, position")
+                        .eq("parent_id", targetParentId)
+                        .gte("position", position);
+
+                    if (affectedEdges) {
+                        for (const edge of affectedEdges) {
+                            await supabase
+                                .from("blueprint_edges")
+                                .update({ position: edge.position + 1 })
+                                .eq("edget_id", edge.edget_id);
+                        }
+                    }
+                }
+
+                // Update the edge itself
+                await supabase
+                    .from("blueprint_edges")
+                    .update({ position, parent_id: targetParentId })
+                    .eq("edget_id", edgeId);
+            } else {
+                // Moving within the same parent
+                if (currentPosition === position) {
+                    // No movement needed
+                    return;
+                }
+
+                if (currentPosition < position) {
+                    // Moving down: shift positions between current and target down by 1
+                    if (currentParentId !== null) {
+                        const { data: affectedEdges } = await supabase
+                            .from("blueprint_edges")
+                            .select("edget_id, position")
+                            .eq("parent_id", currentParentId)
+                            .gt("position", currentPosition)
+                            .lte("position", position);
+
+                        if (affectedEdges) {
+                            for (const edge of affectedEdges) {
+                                await supabase
+                                    .from("blueprint_edges")
+                                    .update({ position: edge.position - 1 })
+                                    .eq("edget_id", edge.edget_id);
+                            }
+                        }
+                    }
+                } else {
+                    // Moving up: shift positions between target and current up by 1
+                    if (currentParentId !== null) {
+                        const { data: affectedEdges } = await supabase
+                            .from("blueprint_edges")
+                            .select("edget_id, position")
+                            .eq("parent_id", currentParentId)
+                            .gte("position", position)
+                            .lt("position", currentPosition);
+
+                        if (affectedEdges) {
+                            for (const edge of affectedEdges) {
+                                await supabase
+                                    .from("blueprint_edges")
+                                    .update({ position: edge.position + 1 })
+                                    .eq("edget_id", edge.edget_id);
+                            }
+                        }
+                    }
+                }
+
+                // Update the edge itself
+                await supabase.from("blueprint_edges").update({ position }).eq("edget_id", edgeId);
+            }
+        },
+    });
+
     const updateBlueprint = tool({
         description: "Update the blueprint",
         inputSchema: z.object({
@@ -148,6 +274,7 @@ ${JSON.stringify(edges, null, 2)}
             addEdge,
             updateEdge,
             updateBlueprint,
+            moveEdge,
         },
 
         providerOptions: {
