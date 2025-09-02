@@ -90,15 +90,15 @@ export function BlueprintContent({ blueprint }: { blueprint: BluePrintWithConten
   const tree = buildTree(edges);
   const ordered = flattenTree(tree);
 
+
   return (
-    <div className="rounded-md border overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="rounded-md border overflow-x-auto min-w-0 max-w-full">
+      <table className="w-full text-sm table-fixed">
         <thead className="bg-muted/50">
           <tr>
             <th className="text-left p-2">Title</th>
             <th className="text-left p-2">Description</th>
             <th className="text-left p-2">Weight</th>
-            <th className="text-left p-2">Position</th>
           </tr>
         </thead>
         <tbody>
@@ -108,13 +108,12 @@ export function BlueprintContent({ blueprint }: { blueprint: BluePrintWithConten
             return (
               <tr key={edge.edget_id} className="border-t">
                 <td className="p-2 align-top">
-                  <div style={{ paddingLeft: indentPx }} className="flex items-start gap-2">
-                    <span>{edge.title}</span>
+                  <div style={{ paddingLeft: indentPx }} className="flex items-start gap-2 min-w-0">
+                    <span className="break-words">{edge.title}</span>
                   </div>
                 </td>
-                <td className="p-2 align-top text-muted-foreground">{edge.description}</td>
+                <td className="p-2 align-top text-muted-foreground break-words whitespace-pre-wrap">{edge.description}</td>
                 <td className="p-2 align-top">{edge.weight}</td>
-                <td className="p-2 align-top">{edge.position}</td>
               </tr>
             );
           })}
