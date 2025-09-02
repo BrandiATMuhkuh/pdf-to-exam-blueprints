@@ -28,11 +28,11 @@ export async function POST(req: Request) {
     const uuids = Array.from({ length: 100 }, () => v4());
 
     const { experimental_output } = await generateText({
-        model: openai("gpt-5"),
+        model: openai.responses("gpt-5"),
 
         providerOptions: {
             openai: {
-                reasoningEffort: "low",
+                reasoningEffort: "minimal",
                 textVerbosity: "low",
             } satisfies OpenAIResponsesProviderOptions,
         },

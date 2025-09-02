@@ -123,7 +123,7 @@ export async function POST(req: Request) {
     });
 
     const result = streamText({
-        model: openai("gpt-5"),
+        model: openai.responses("gpt-5"),
         messages: convertToModelMessages(messages),
         system: `You are an agent that helps to build and adjust examp blueprints. 
 Your job is to to add, update, delete, move entries. 

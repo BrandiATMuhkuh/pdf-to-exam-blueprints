@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     }
 
     const { experimental_output } = await generateText({
-        model: openai("gpt-5"),
+        model: openai.responses("gpt-5"),
         system: `Find all exam blueprints in this file. A blueprint in this case is not the content (table) but the topic. Some pdfs have multiple blueprints.
         
         
