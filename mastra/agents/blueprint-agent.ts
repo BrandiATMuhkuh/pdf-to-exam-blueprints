@@ -1,7 +1,5 @@
 import { openai } from "@ai-sdk/openai";
 import { Agent } from "@mastra/core/agent";
-import { LibSQLStore } from "@mastra/libsql";
-import { Memory } from "@mastra/memory";
 import { addEdgeTool } from "../tools/add-edge-tool";
 import { getBlueprintEdgesTool } from "../tools/get-blueprint-edges-tool";
 import { moveEdgeTool } from "../tools/move-edge-tool";
@@ -40,9 +38,4 @@ export const blueprintAgent = new Agent({
         updateBlueprintTool,
         getBlueprintEdgesTool,
     },
-    memory: new Memory({
-        storage: new LibSQLStore({
-            url: "file:../mastra.db", // path is relative to the .mastra/output directory
-        }),
-    }),
 });
