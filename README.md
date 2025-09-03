@@ -41,6 +41,16 @@ The application uses two main tables to store the blueprint data:
 
 ![Application UI](doc-imgs/ui.png)
 
+### Import Process
+
+#### Step 1: Upload Document
+
+![Upload Document](doc-imgs/import_step_1.png)
+
+#### Step 2: Select Import Options
+
+![Select Import Options](doc-imgs/import_step_2.png)
+
 ### Database Setup
 
 ![Supabase Configuration](doc-imgs/supabase.png)
