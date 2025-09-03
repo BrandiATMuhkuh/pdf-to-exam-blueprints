@@ -2,7 +2,7 @@ import supabase from "@/lib/supabaseClient";
 import { openai, OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
 import { generateText, Output } from "ai";
 import { v4 } from "uuid";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const maxDuration = 60;
 export const runtime = "nodejs";
